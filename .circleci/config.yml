@@ -1,46 +1,46 @@
-version: 2.1
-workflows:
-  testing:
-    jobs:
-      - runner-test
-jobs:
-  runner-test:
-    machine: true
-    resource_class: platform_engineer_handbook/platform_core
-    steps:
-      - run: echo "Hi I'm on Runners!"
-
-
-
 # version: 2.1
-
-# executors:
-#   local-machine:
+# workflows:
+#   testing:
+#     jobs:
+#       - runner-test
+# jobs:
+#   runner-test:
 #     machine: true
 #     resource_class: platform_engineer_handbook/platform_core
-#     working_directory: /home/patrick/training/oreilly_courses/platform_engineering_handbook/platform_core
-
-# commands:
-#   tofu-init:
-#     description: Initialize OpenTofu against the state for one environment
-#     parameters:
-#       env_name:
-#         type: string
 #     steps:
-#       - run:
-#           name: tofu init (<< parameters.env_name >>)
-#           working_directory: tofu-cluster
-#           command: |
-#             tofu init -input=false -reconfigure \
-#               -backend-config=envs/<< parameters.env_name >>.backend.hcl
+#       - run: echo "Hi I'm on Runners!"
 
-#   lint-code:
-#     description: Formatting check
-#     steps:
-#       - run:
-#           name: tofu fmt
-#           working_directory: tofu-cluster
-#           command: tofu fmt -check -recursive -diff
+
+
+version: 2.1
+
+executors:
+  local-machine:
+    machine: true
+    resource_class: platform_engineer_handbook/local-laptop
+    working_directory: /home/patrick/training/oreilly_courses/platform_engineering_handbook/platform_core
+
+commands:
+  tofu-init:
+    description: Initialize OpenTofu against the state for one environment
+    parameters:
+      env_name:
+        type: string
+    steps:
+      - run:
+          name: tofu init (<< parameters.env_name >>)
+          working_directory: /home/patrick/training/oreilly_courses/platform_engineering_handbook/platform_core
+          command: |
+            tofu init -input=false -reconfigure \
+              -backend-config=envs/<< parameters.env_name >>.backend.hcl
+
+  lint-code:
+    description: Formatting check
+    steps:
+      - run:
+          name: tofu fmt
+          working_directory: /home/patrick/training/oreilly_courses/platform_engineering_handbook/platform_core
+          command: tofu fmt -check -recursive -diff
 
 #   policy-check:
 #     description: OPA/conftest policy validation
@@ -129,34 +129,34 @@ jobs:
 #           when: always
 #           command: rm -f kubeconfig.yaml
 
-# workflows:
-#   # Sandbox: every commit to main
-#   preview:
-#     jobs:
-#       - tofu-plan:
-#           name: "Plan platform-sandbox"
-#           context: &context
-#             - platform-secrets
-#           env_name: platform-sandbox
-#           filters: &on-push-main
-#             branches:
-#               only: /^main$/
-#             tags:
-#               ignore: /.*/
-#       - tofu-apply:
-#           name: "Deploy to platform-sandbox"
-#           context: *context
-#           env_name: platform-sandbox
-#           requires:
-#             - Plan platform-sandbox
-#           filters: *on-push-main
-#       - validate-infrastructure:
-#           name: "Validate platform-sandbox"
-#           context: *context
-#           env_name: platform-sandbox
-#           requires:
-#             - Deploy to platform-sandbox
-#           filters: *on-push-main
+workflows:
+  # Sandbox: every commit to main
+  preview:
+    jobs:
+      - tofu-plan:
+          name: "Plan platform-sandbox"
+          context: &context
+            - platform-secrets
+          env_name: platform-sandbox
+          filters: &on-push-main
+            branches:
+              only: /^main$/
+            tags:
+              ignore: /.*/
+      - tofu-apply:
+          name: "Deploy to platform-sandbox"
+          context: *context
+          env_name: platform-sandbox
+          requires:
+            - Plan platform-sandbox
+          filters: *on-push-main
+      - validate-infrastructure:
+          name: "Validate platform-sandbox"
+          context: *context
+          env_name: platform-sandbox
+          requires:
+            - Deploy to platform-sandbox
+          filters: *on-push-main
 
 #   # Tags: re-run sandbox, then gate app-dev behind an approval
 #   update:
