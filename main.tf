@@ -1,7 +1,7 @@
 locals {
   vpc_cidr     = "10.0.0.0/16"
-  public_cidr  = cidrsubnet(local.vpc_cidr, 8, 1)   # 10.0.1.0/24
-  private_cidr = cidrsubnet(local.vpc_cidr, 8, 2)   # 10.0.2.0/24
+  public_cidr  = cidrsubnet(local.vpc_cidr, 8, 1) # 10.0.1.0/24
+  private_cidr = cidrsubnet(local.vpc_cidr, 8, 2) # 10.0.2.0/24
 }
 
 # Kind uses a Docker network named "kind" and reuses it if it already exists,
@@ -12,15 +12,15 @@ resource "docker_network" "kind" {
 
   ipam_config {
     aux_address = {}
-    gateway = "10.0.0.1"
-    subnet = local.vpc_cidr
+    gateway     = "10.0.0.1"
+    subnet      = local.vpc_cidr
   }
 }
 
 resource "kind_cluster" "dev" {
-  depends_on = [docker_network.kind]
-  name = "pe-sandbox"
-  node_image = "kindest/node:v1.31.0"
+  depends_on     = [docker_network.kind]
+  name           = "pe-sandbox"
+  node_image     = "kindest/node:v1.31.0"
   wait_for_ready = true
 
   kind_config {

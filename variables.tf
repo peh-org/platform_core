@@ -1,4 +1,4 @@
 variable "passphrase" {
-  type = string
+  type      = string
   sensitive = true
 }
