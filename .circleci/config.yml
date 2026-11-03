@@ -1,20 +1,26 @@
+# version: 2.1
+# workflows:
+#   testing:
+#     jobs:
+#       - runner-test
+# jobs:
+#   runner-test:
+#     machine: true
+#     resource_class: platform_engineer_handbook/platform_core
+#     steps:
+#       - run: echo "Hi I'm on Runners!"
+
+
+
 version: 2.1
-
-executors:
-  local-machine:
-    machine: true
-    resource_class: platform_engineer_handbook/local-laptop
-
+orbs:
+  terraform: circleci/terraform@3.7.0
 jobs:
-  tofu-checks:
-    executor: local-machine
-    environment:
-      TF_IN_AUTOMATION: "true"
+  validate:
+    machine: true
+    executor: terraform/default
     steps:
       - checkout
-      - run:
-          name: tofu version
-          command: tofu version
       - run:
           name: tofu fmt
           command: tofu fmt -check -recursive -diff
@@ -24,32 +30,6 @@ jobs:
       - run:
           name: tofu validate
           command: tofu validate
-
-  tofu-plan:
-    executor: local-machine
-    environment:
-      TF_IN_AUTOMATION: "true"
-    steps:
-      - checkout
-      - run:
-          name: tofu init
-          command: tofu init -input=false
-      - run:
-          name: tofu plan
-          command: tofu plan -input=false
-
-workflows:
-  ci:
-    jobs:
-      - tofu-checks
-      - tofu-plan:
-          context: PLATFORM_ADMIN
-          requires:
-            - tofu-checks
-
-
-
-
 
 # executors:
 #   local-machine:
