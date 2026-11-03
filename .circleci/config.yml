@@ -1,0 +1,210 @@
+version: 2.1
+workflows:
+  testing:
+    jobs:
+      - runner-test
+jobs:
+  runner-test:
+    machine: true
+    resource_class: platform_engineer_handbook/platform_core
+    steps:
+      - run: echo "Hi I'm on Runners!"
+
+# version: 2.1
+
+# executors:
+#   local-machine:
+#     machine: true
+#     resource_class: platform_engineer_handbook/platform_core
+#     working_directory: /home/patrick/training/oreilly_courses/platform_engineering_handbook/platform_core
+
+# commands:
+#   tofu-init:
+#     description: Initialize OpenTofu against the state for one environment
+#     parameters:
+#       env_name:
+#         type: string
+#     steps:
+#       - run:
+#           name: tofu init (<< parameters.env_name >>)
+#           working_directory: tofu-cluster
+#           command: |
+#             tofu init -input=false -reconfigure \
+#               -backend-config=envs/<< parameters.env_name >>.backend.hcl
+
+#   lint-code:
+#     description: Formatting check
+#     steps:
+#       - run:
+#           name: tofu fmt
+#           working_directory: tofu-cluster
+#           command: tofu fmt -check -recursive -diff
+
+#   policy-check:
+#     description: OPA/conftest policy validation
+#     steps:
+#       - run:
+#           name: conftest against environment manifests
+#           command: conftest test environments/ --policy policy/
+#       - run:
+#           name: conftest against smoke test manifests
+#           command: conftest test smoke/ --policy policy/
+
+# jobs:
+#   tofu-plan:
+#     executor: local-machine
+#     parameters:
+#       env_name:
+#         type: string
+#     environment:
+#       TF_IN_AUTOMATION: "true"
+#     steps:
+#       - checkout
+#       - lint-code
+#       - tofu-init:
+#           env_name: << parameters.env_name >>
+#       - run:
+#           name: tofu validate
+#           working_directory: tofu-cluster
+#           command: tofu validate
+#       - policy-check
+#       - run:
+#           name: tofu plan (<< parameters.env_name >>)
+#           working_directory: tofu-cluster
+#           command: |
+#             tofu plan -input=false \
+#               -var-file=envs/<< parameters.env_name >>.tfvars \
+#               -out=tfplan-<< parameters.env_name >>
+#       - persist_to_workspace:
+#           root: .
+#           paths:
+#             - tofu-cluster/tfplan-<< parameters.env_name >>
+
+#   tofu-apply:
+#     executor: local-machine
+#     parameters:
+#       env_name:
+#         type: string
+#     environment:
+#       TF_IN_AUTOMATION: "true"
+#     steps:
+#       - checkout
+#       - attach_workspace:
+#           at: .
+#       - tofu-init:
+#           env_name: << parameters.env_name >>
+#       - run:
+#           name: tofu apply (<< parameters.env_name >>)
+#           working_directory: tofu-cluster
+#           command: tofu apply -input=false tfplan-<< parameters.env_name >>
+
+#   validate-infrastructure:
+#     executor: local-machine
+#     parameters:
+#       env_name:
+#         type: string
+#     steps:
+#       - checkout
+#       - tofu-init:
+#           env_name: << parameters.env_name >>
+#       - run:
+#           name: Export kubeconfig from OpenTofu output
+#           command: |
+#             umask 077
+#             (cd tofu-cluster && tofu output -raw kubeconfig) > kubeconfig.yaml
+#             echo "export KUBECONFIG=$PWD/kubeconfig.yaml" >> "$BASH_ENV"
+#       - run:
+#           name: Run bats infrastructure tests
+#           command: bats test/infrastructure.bats
+#       - run:
+#           name: Force Flux reconciliation and smoke test
+#           command: |
+#             export ENV_NAME=<< parameters.env_name >>
+#             export SMOKE_HOST="${ENV_NAME}.local"
+#             bash scripts/flux_reconcile.sh
+#       - run:
+#           name: Clean up kubeconfig
+#           when: always
+#           command: rm -f kubeconfig.yaml
+
+# workflows:
+#   # Sandbox: every commit to main
+#   preview:
+#     jobs:
+#       - tofu-plan:
+#           name: "Plan platform-sandbox"
+#           context: &context
+#             - platform-secrets
+#           env_name: platform-sandbox
+#           filters: &on-push-main
+#             branches:
+#               only: /^main$/
+#             tags:
+#               ignore: /.*/
+#       - tofu-apply:
+#           name: "Deploy to platform-sandbox"
+#           context: *context
+#           env_name: platform-sandbox
+#           requires:
+#             - Plan platform-sandbox
+#           filters: *on-push-main
+#       - validate-infrastructure:
+#           name: "Validate platform-sandbox"
+#           context: *context
+#           env_name: platform-sandbox
+#           requires:
+#             - Deploy to platform-sandbox
+#           filters: *on-push-main
+
+#   # Tags: re-run sandbox, then gate app-dev behind an approval
+#   update:
+#     jobs:
+#       - tofu-plan:
+#           name: "Plan platform-sandbox (tag)"
+#           context: *context
+#           env_name: platform-sandbox
+#           filters: &on-tag-main
+#             branches:
+#               ignore: /.*/
+#             tags:
+#               only: /.*/
+#       - tofu-apply:
+#           name: "Deploy to platform-sandbox (tag)"
+#           context: *context
+#           env_name: platform-sandbox
+#           requires:
+#             - Plan platform-sandbox (tag)
+#           filters: *on-tag-main
+#       - validate-infrastructure:
+#           name: "Validate platform-sandbox (tag)"
+#           context: *context
+#           env_name: platform-sandbox
+#           requires:
+#             - Deploy to platform-sandbox (tag)
+#           filters: *on-tag-main
+#       - tofu-plan:
+#           name: "Plan app-dev"
+#           context: *context
+#           env_name: app-dev
+#           requires:
+#             - Validate platform-sandbox (tag)
+#           filters: *on-tag-main
+#       - approve-app-dev:
+#           type: approval
+#           requires:
+#             - Plan app-dev
+#           filters: *on-tag-main
+#       - tofu-apply:
+#           name: "Deploy to app-dev"
+#           context: *context
+#           env_name: app-dev
+#           requires:
+#             - approve-app-dev
+#           filters: *on-tag-main
+#       - validate-infrastructure:
+#           name: "Validate app-dev"
+#           context: *context
+#           env_name: app-dev
+#           requires:
+#             - Deploy to app-dev
+#           filters: *on-tag-main
