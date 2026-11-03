@@ -1,24 +1,51 @@
-version: '2.1'
-orbs:
-  terraform: circleci/terraform@3.5
-workflows:
-  deploy_infrastructure:
-    jobs:
-      - terraform/fmt:
-          checkout: true
-          context: terraform
-      - terraform/validate:
-          checkout: true
-          context: terraform
-          requires:
-            - terraform/fmt
-      - terraform/plan:
-          checkout: true
-          context: terraform
-          persist-workspace: true
-          requires:
-            - terraform/validate
+version: 2.1
 
+executors:
+  local-machine:
+    machine: true
+    resource_class: platform_engineer_handbook/local-laptop
+
+jobs:
+  tofu-checks:
+    executor: local-machine
+    environment:
+      TF_IN_AUTOMATION: "true"
+    steps:
+      - checkout
+      - run:
+          name: tofu version
+          command: tofu version
+      - run:
+          name: tofu fmt
+          command: tofu fmt -check -recursive -diff
+      - run:
+          name: tofu init (no backend)
+          command: tofu init -backend=false -input=false
+      - run:
+          name: tofu validate
+          command: tofu validate
+
+  tofu-plan:
+    executor: local-machine
+    environment:
+      TF_IN_AUTOMATION: "true"
+    steps:
+      - checkout
+      - run:
+          name: tofu init
+          command: tofu init -input=false
+      - run:
+          name: tofu plan
+          command: tofu plan -input=false
+
+workflows:
+  ci:
+    jobs:
+      - tofu-checks
+      - tofu-plan:
+          context: PLATFORM_ADMIN
+          requires:
+            - tofu-checks
 
 
 
