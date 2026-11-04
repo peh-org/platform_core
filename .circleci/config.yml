@@ -8,7 +8,7 @@ jobs:
     machine: true
     resource_class: platform_engineer_handbook/thinkpad
     steps:
-      - run: echo "Hi I'm on Runners!"
+      - run: echo "Hi I'm on Runners! again"
 
 
 # version: 2.1
