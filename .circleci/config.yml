@@ -9,15 +9,15 @@ jobs:
     resource_class: platform_engineer_handbook/local-laptop
     steps:
       - run: echo "Hi I'm on Runners!"
-      # - run:
-      #     name: tofu fmt
-      #     command: tofu fmt -check -recursive -diff
-      # - run:
-      #     name: tofu init (no backend)
-      #     command: tofu init -backend=false -input=false
-      # - run:
-      #     name: tofu validate
-      #     command: tofu validate
+      - run:
+          name: tofu fmt
+          command: tofu fmt -check -recursive -diff
+      - run:
+          name: tofu init (no backend)
+          command: tofu init -backend=false -input=false
+      - run:
+          name: tofu validate
+          command: tofu validate
 
 
 
