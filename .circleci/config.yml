@@ -1,14 +1,16 @@
 version: 2.1
-workflows:
-  testing:
-    jobs:
-      - runner-test
 jobs:
   runner-test:
     machine: true
-    resource_class: platform_engineer_handbook/thinkpad
+    resource_class: platform_engineer_handbook/platform_core
     steps:
-      - run: echo "PLLEEEAASSEEE"
+    - run:
+        command: echo "Hi I'm on Runners!"
+workflows:
+  testing:
+    jobs:
+    - runner-test
+  version: 2
 
 
 # version: 2.1
