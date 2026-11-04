@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  runner-test:
+  jobjobjob:
     machine: true
     resource_class: platform_engineer_handbook/thinkpad
     steps:
@@ -9,7 +9,7 @@ jobs:
 workflows:
   testing:
     jobs:
-    - runner-test
+    - jobjobjob
   version: 2
 
 
