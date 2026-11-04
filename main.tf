@@ -20,7 +20,7 @@ resource "docker_network" "kind" {
 resource "kind_cluster" "dev" {
   depends_on     = [docker_network.kind]
   name           = "pe-sandbox"
-  node_image     = "kindest/node:v1.31.0"
+  node_image     = "kindest/node:v1.35.0"
   wait_for_ready = true
 
   kind_config {
@@ -52,4 +52,9 @@ resource "kind_cluster" "dev" {
 
   # write kubeconfig to local file
   # kubeconfig_path = "kubeconfig"
+}
+
+resource "flux_bootstrap_git" "flux" {
+  depends_on = [kind_cluster.dev]
+  path       = "platform-gitops"
 }

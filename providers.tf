@@ -10,6 +10,10 @@ terraform {
       source  = "kreuzwerker/docker"
       version = "~> 4.6.0"
     }
+    flux = {
+      source  = "fluxcd/flux"
+      version = "~> 1.10.0"
+    }
   }
 
   encryption {
@@ -33,5 +37,18 @@ terraform {
     }
 
     ## Step 6: Repeat steps 3-5 for plan{} if needed.
+  }
+}
+
+provider "flux" {
+  kubernetes = {
+    config_path = "${resource.kind_cluster.dev.name}-config"
+  }
+  git = {
+    url = var.platform_core_github_url
+    http = {
+      username = "git"
+      password = var.platform_core_github_pat
+    }
   }
 }

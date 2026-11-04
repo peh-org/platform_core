@@ -16,7 +16,12 @@ export CLUSTER_NAME=$(tofu output -raw cluster_name)
   [ "$node_count" -ge 1 ]
 }
 
-
+@test "flux: all checks passed" {
+  run flux check
+  echo "$output"        # shown by bats if the test fails
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"all checks passed"* ]]
+}
 
 
 # Nothing to teardown at this point
