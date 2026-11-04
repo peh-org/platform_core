@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   runner-test:
     machine: true
-    resource_class: platform_engineer_handbook/platform_core
+    resource_class: platform_engineer_handbook/thinkpad
     steps:
     - run:
         command: echo "Hi I'm on Runners!"
