@@ -4,8 +4,7 @@ locals {
   private_cidr = cidrsubnet(local.vpc_cidr, 8, 2) # 10.0.2.0/24
 }
 
-# Kind uses a Docker network named "kind" and reuses it if it already exists,
-# so creating it first with your subnet controls the node IPs.
+# Create docker network
 resource "docker_network" "kind" {
   name   = "kind"
   driver = "bridge"
@@ -17,6 +16,7 @@ resource "docker_network" "kind" {
   }
 }
 
+# Create cluster that uses docker network
 resource "kind_cluster" "dev" {
   depends_on     = [docker_network.kind]
   name           = "pe-sandbox"
@@ -54,6 +54,7 @@ resource "kind_cluster" "dev" {
   # kubeconfig_path = "kubeconfig"
 }
 
+# Bootstrap fluxcd inside of cluster
 resource "flux_bootstrap_git" "flux" {
   depends_on = [kind_cluster.dev]
   path       = "platform-gitops"

@@ -1,6 +1,12 @@
 # platform_core
 Core platform runtime
 
+## About
+- chose opentofu over terraform because 
+    - licensing
+    - encrypting plan and state output
+- Use Trunk Based Deployment methods for platform infrastructure and service deployments
+
 ## outputs
 - kubeconfig_path
     - written to pe-sandbox.config in folder
