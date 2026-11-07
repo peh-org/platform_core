@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   jobjobjob:
     machine: true
-    resource_class: platform_engineer_handbook/thinkpad
+    resource_class: platform_engineer_handbook/laptop
     steps:
     - run:
         command: echo "Hi I'm on Runnesdfrssdfssdfdf!"
