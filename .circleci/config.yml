@@ -5,7 +5,7 @@ jobs:
     resource_class: platform_engineer_handbook/thinkpad
     steps:
     - run:
-        command: echo "Hi I'm on Runnerssdfsdf!"
+        command: echo "Hi I'm on Runnerssdfssdfdf!"
 workflows:
   testing:
     jobs:
