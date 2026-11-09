@@ -9,10 +9,14 @@ Core platform runtime
 
 ## Resources deployed via OpenTofu
 - Docker Network
+    - Create Network with 1 Public Subnet, 1 Private Subnet
 - Kind Cluster
 - Bootstrap Flux inside of cluster
     - OpenTofu will own Flux inside of platform_core
     - use this setup so FluxCD is created with cluster, no second step to install
+
+## Test
+- `/test/infrastructure.bats` - verify infrastructure is deployed and in good state
 
 ## outputs
 - kubeconfig_path
