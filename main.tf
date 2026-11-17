@@ -43,10 +43,23 @@ resource "kind_cluster" "dev" {
         container_port = 443
         host_port      = 8443
       }
+      extra_port_mappings {   # For Keycloak NodePort
+        container_port = 30080
+        host_port      = 30080
+      }
+      extra_mounts {
+        host_path = "/mnt/proxmox"
+        container_path = "/mnt/thumbdrive"
+      }
     }
 
     node {
       role = "worker"
+
+      extra_mounts {
+        host_path = "/mnt/proxmox"
+        container_path = "/mnt/thumbdrive"
+      }
     }
   }
 
