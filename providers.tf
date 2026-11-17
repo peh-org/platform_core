@@ -45,10 +45,10 @@ provider "flux" {
     config_path = "${resource.kind_cluster.dev.name}-config"
   }
   git = {
-    url = var.platform_core_github_url
+    url = var.platform_gitops_github_url
     http = {
       username = "git"
-      password = var.platform_core_github_pat
+      password = var.platform_gitops_github_pat
     }
   }
 }
