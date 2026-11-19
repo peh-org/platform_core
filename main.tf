@@ -68,7 +68,7 @@ resource "kind_cluster" "dev" {
 }
 
 # Bootstrap fluxcd inside of cluster
-resource "flux_bootstrap_git" "flux" {
+resource "flux_bootstrap_git" "sandbox" {
   depends_on = [kind_cluster.dev]
-  path       = "platform-gitops"
+  path       = "environments/sandbox"
 }
